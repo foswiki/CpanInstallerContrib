@@ -18,6 +18,8 @@ use Config;
 use Pod::Usage;
 
 my $optsConfig = {
+    'list-uninstalled' => 0,
+    'list-versions' => 0,
 #
     status => 0,
     verbose => 0,
@@ -27,6 +29,8 @@ my $optsConfig = {
 };
 
 GetOptions( $optsConfig,
+	    'list-uninstalled',
+	    'list-versions',
 	    'status',
 # miscellaneous/generic options
 	    'help', 'man', 'debug', 'verbose|v',
@@ -46,7 +50,20 @@ if ( $optsConfig->{status} ) {
 #$ua->agent( 'Foswiki CpanContrib calc-cpan-dependencies.pl/0.1' );
 
 #*calc_cpan_dependencies = \&calc_cpan_dependences_webservice;
-print &calc_cpan_dependencies_webservice( $_ ), "\n" foreach @ARGV;
+my @deps = map { &calc_cpan_dependencies_webservice( $_ ) } @ARGV;
+my @versions = map { [ $_ => eval "use $_; \$${_}::VERSION" ] } @deps;
+print "@versions: " . Dumper( \@versions ) if $optsConfig->{debug};
+
+print join( ', ', map { "$_->[0] (" . ($_->[1]||'') . ')' } @versions ), "\n"
+    if $optsConfig->{'list-versions'};
+
+if ( $optsConfig->{'list-uninstalled'} ) {
+    print join( ', ', map { $_->[0] } grep { not defined $_->[1] } @versions ), "\n";
+} else {
+    print join( ' ', @deps ), "\n";
+}
+
+exit 0;
 
 ################################################################################
 
@@ -63,7 +80,7 @@ sub calc_cpan_dependencies_webservice {
     } else {
     }
 
-    return join( ' ', @deps );
+    return @deps;
 }
 
 ################################################################################
@@ -78,9 +95,11 @@ calc-cpan-dependencies.pl - calculate CPAN module dependency requirements
 
 tools/calc-cpan-dependencies.pl [options] <CPAN Module>...
 
-Copyright 2009 Will Norris.  All Rights Reserved.
+Copyright 2009,2010 Will Norris.  All Rights Reserved.
 
   Options:
+   --list-uninstalled  only list those modules which are not already installed
+   --list-versions     display version number for each installed module
    -status             show configuration
    -verbose
    -debug
