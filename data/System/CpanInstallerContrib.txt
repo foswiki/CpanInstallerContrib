@@ -12,8 +12,8 @@ Proin ligula quam, vulputate et, laoreet vel, porttitor at, metus. Aliquam biben
 ---++ Installing CPAN modules
 
 <pre>
-	tools/install-cpan.pl --baselibdir=~/lib/CPAN/ <i>module...</i> &lt;/dev/null
-	# defaults to --mirror=tools/MIRROR/MINICPAN if it exists, otherwise to http://cpan.org/
+$ tools/install-cpan.pl --baselibdir=~/foswiki/lib/CPAN/ <i>module...</i> &lt;/dev/null
+# defaults to --mirror=tools/MIRROR/MINICPAN if it exists, otherwise to http://cpan.org/
 </pre>
 
 The CpanInstallerContrib is also useful outside of the scope of Foswiki as it provides a way to reliably install CPAN
@@ -26,7 +26,7 @@ modules locally.
 
 As of 07 May 2007, a mirror requires approximately _795MB_ of storage.
 <verbatim>
-	tools/mirror-cpan.pl
+$ tools/mirror-cpan.pl
 </verbatim>
 
 =mirror-cpan.pl= with its default parameters downloads the latest version of all CPAN modules from
@@ -34,16 +34,12 @@ http://cpan.org and stores those files locally in a =MIRROR/MINICPAN/= directory
 =mirror-cpan.pl=.
 (see =mirror-cpan.pl --help= for more information on command line parameters.)
  
-<!--
-%H% A daily-updated mini cpan mirror is located at http://foswiki.biohack.net/pub/cpan/MIRROR/MINICPAN/
--->
-
 
 ---++!! Settings
 
-Settings are stored as preferences variables. To reference a setting write ==%<nop>&lt;plugin&gt;_&lt;setting&gt;%==, e.g. ==%<nop>CPANCONTRIB_STUB%==
+Settings are stored as preferences variables. To reference a setting, write ==%<nop>&lt;plugin&gt;_&lt;setting&gt;%==, e.g. ==%<nop>CPANCONTRIB_STUB%==
 
-   * One line des<cription:
+   * One line description:
       * Set SHORTDESCRIPTION = Bundled Prebuilt CPAN Modules for Foswiki's Foswiki:Extensions modules
 
    * Name of the perl package
