@@ -1,4 +1,4 @@
 data/System/CpanInstallerContrib.txt 0555 Contrib documentation page
 tools/install-cpan.pl 0664 Script to nstall CPAN modules
 tools/calc-cpan-dependencies.pl 0664 Script to calculate CPAN module dependencies
-tools/mirror-cpan.pl 0664 Script to create a local mirror containing the _latest_ versions of CPAN
+tools/mirror-cpan.pl 0664 Script to create a local mirror containing the _latest_ version of CPAN modules

@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 # mirror cpan (adapted from Randal Schwartz' program at ...)
-# Copyright 2004 Will Norris.  All Rights Reserved.
+# Copyright 2004,2010 Will Norris.  All Rights Reserved.
 # License: GPL
 
 # TODO: just start using minicpan :)
@@ -14,7 +14,9 @@ sub Usage
 {
     print <<'__USAGE__';
 Usage:
-  mirror-cpan.pl [--mirror=[http://cpan.org]] [--local=[$FindBin::BIN/MIRROR/MINICPAN/]] [cpan modules list regex...]
+  mirror-cpan.pl [options] [CPAN modules list regex...]
+      --mirror-from	source mirror; defaults to http://cpan.org
+      --mirror-to       destination mirror; defaults to a MIRROR/CPAN/ below this mirror-cpan.pl script
       --status		shows variables
       --help | --?	usage info
       --debug
@@ -22,10 +24,11 @@ Usage:
 
 Examples:
 Creates local mirror from CPAN containing only the latest version of each module (~795MB 07 May 2007)
-  tools/mirror-cpan.pl
+$ tools/mirror-cpan.pl
+
 Creates a local mirror of everything related to WWW::Mechanize
-  ./mirror-cpan.pl WWW::Mechanize
-  ./mirror-cpan.pl \^WWW::Mechanize      # more selective; only WWW::Mechanize tree on down, but not, eg, Test::WWW::Mechanize
+$ ./mirror-cpan.pl WWW::Mechanize
+$ ./mirror-cpan.pl \^WWW::Mechanize      # more selective; only WWW::Mechanize tree on down, but not, eg, Test::WWW::Mechanize
 __USAGE__
 
     return 0;
@@ -38,8 +41,8 @@ use Data::Dumper qw( Dumper );
 
 ## warning: unknown files below the =local= dir are deleted!
 $optsConfig = {
-    mirror => 'http://cpan.org/',
-    local => "$FindBin::Bin/MIRROR/MINICPAN/",
+    'mirror-from' => 'http://cpan.org/',
+    'mirror-to' => "$FindBin::Bin/MIRROR/MINICPAN/",
 # 
     status => 0,
     verbose => 0,
@@ -53,7 +56,7 @@ my $TRACE = 1;
 ### END CONFIG
 
 GetOptions( $optsConfig,
-	    'mirror=s', 'local=s',
+	    'mirror-from=s', 'mirror-to=s',
 	    'status',
 # miscellaneous/generic options
 	    'help|?', 'man', 'debug', 'verbose|v',
@@ -68,14 +71,14 @@ my @modules = @ARGV ? @ARGV : q(.+);
 print Dumper( \@modules ) if $optsConfig->{debug};
 
 if ( $optsConfig->{status} ) {
-    print qq{Mirroring from "$optsConfig->{mirror}" to "$optsConfig->{local}"\n};
+    print qq{Mirroring from "$optsConfig->{'mirror-from'}" to "$optsConfig->{'mirror-to'}"\n};
     exit 0;
 }
 
 ################################################################################
 
-my $REMOTE = $optsConfig->{mirror};
-my $LOCAL = $optsConfig->{local};
+my $REMOTE = $optsConfig->{'mirror-from'};
+my $LOCAL = $optsConfig->{'mirror-to'};
 
 ## core -
 use File::Path qw(mkpath);

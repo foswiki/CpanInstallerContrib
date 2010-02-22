@@ -72,11 +72,11 @@ sub calc_cpan_dependencies_webservice {
 __DATA__
 =head1 NAME
 
-calc-cpan-dependencies.pl - install local version of CPAN modules
+calc-cpan-dependencies.pl - calculate CPAN module dependency requirements
 
 =head1 SYNOPSIS
 
-calc-cpan-dependencies.pl [options] <CPAN Module>...
+tools/calc-cpan-dependencies.pl [options] <CPAN Module>...
 
 Copyright 2009 Will Norris.  All Rights Reserved.
 

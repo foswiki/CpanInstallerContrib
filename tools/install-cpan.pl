@@ -21,7 +21,7 @@ use Cwd qw( cwd );
 my $dirMirror = "$FindBin::Bin/MIRROR/MINICPAN/";
 my $optsConfig = {
 #
-    installdir => $FindBin::Bin . "/../cgi-bin/lib/CPAN",
+    installdir => $FindBin::Bin . '/../lib/CPAN',
 # SMELL: change into list   
     mirror => -d $dirMirror && "file:$dirMirror" || 'http://cpan.org',
 #
@@ -226,18 +226,19 @@ install-cpan.pl - install local version of CPAN modules
 
 =head1 SYNOPSIS
 
-install-cpan.pl [options] [-installdir] [-mirror]
+install-cpan.pl [options] --installdir=  <CPAN modules...>
 
-Copyright 2004, 2005, 2009 Will Norris.  All Rights Reserved.
+Copyright 2004, 2005, 2009, 2010 Will Norris.  All Rights Reserved.
 
   Options:
-   -installdir         where to install the CPAN modules and documentation
+   -installdir         where to install the CPAN modules and documentation. 
+                       CPAN modules are installed in a lib/ directory underneath.
    -mirror             location of the (mini) CPAN mirror [http://cpan.org]
    -config             specify CPAN configuration [~/.cpan/CPAN/MyConfig.pm]
    -status             show configuration
    -verbose
    -debug
-   -help               this documentation
+   -help               this usage information
    -man                full docs
 
 =head1 OPTIONS
@@ -269,9 +270,11 @@ This means that when you specificy this additional library path, you have to spe
 
 Examples:
 
-export PERL5LIB=~/lib/CPAN/lib/:~/lib/CPAN/lib/arch
+export PERL5LIB=~/lib/CPAN/lib/:~/lib/CPAN/lib/arch/
 
-use lib qw( /path/to/foswiki/lib/CPAN/lib /path/to/foswiki/lib/CPAN/lib/arch );
+perl -I~/lib/CPAN/lib/ -I~/lib/CPAN/lib/arch/
+
+use lib qw( /path/to/foswiki/lib/CPAN/lib /path/to/foswiki/lib/CPAN/lib/arch/ );
 
 
 

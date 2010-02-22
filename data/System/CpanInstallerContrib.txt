@@ -1,30 +1,78 @@
 %META:TOPICINFO{author="TopicUserMapping_WillNorris" date="1178955051" format="1.1" version="1.2"}%
 ---+!! CpanInstallerContrib Contrib Package
 
-%SHORTDESCRIPTION%
-
-Proin ligula quam, vulputate et, laoreet vel, porttitor at, metus. Aliquam bibendum nisl non ante. Maecenas dignissim eleifend ante. Phasellus pede ligula, cursus id, lacinia id, tristique id, nulla. Donec quam nibh, volutpat vel, accumsan eu, tempus eget, felis. Mauris sagittis lobortis mi. 
-
-----
+=tools/install-cpan.pl= is designed to easily install CPAN modules and their accompanying
+documentation and support files to a local directory (non system-wide installation).
 
 %TOC%
 
 ---++ Installing CPAN modules
 
+You don't need to configure CPAN installation manually nor will this script clobber any existing CPAN =MyConfig.pm=
+
 <pre>
-$ tools/install-cpan.pl --baselibdir=~/foswiki/lib/CPAN/ <i>module...</i> &lt;/dev/null
-# defaults to --mirror=tools/MIRROR/MINICPAN if it exists, otherwise to http://cpan.org/
+$ tools/install-cpan.pl [options] --installdir=  <CPAN modules...>
+  Options:
+   -installdir         where to install the CPAN modules and documentation. 
+                       CPAN modules are installed in a lib/ directory underneath.
+   -mirror             location of the (mini) CPAN mirror [defaults to 
+                       =tools/MIRROR/MINICPAN= if it exists, otherwise http://cpan.org]
+   -config             specify CPAN configuration [~/.cpan/CPAN/MyConfig.pm]
+   -status             show configuration
+   -verbose
+   -debug
+   -help               this usage information
+   -man                full docs
 </pre>
+
+Note that the =installdir= is the root of the locally-installed CPAN libraries *and* documentation.
+Directories such as =lib= and =man= (and sometimes =bin=) will be created below =installdir=.
+There might also be module files installed in the computer architecture-specific directory =arch=.
+This is the normal layout Foswiki expects in =lib/CPAN= and is designed to automatically
+recognize new modules installed here.
+
+<pre>
+$ tools/install-cpan.pl --installdir=~/foswiki/lib/CPAN/ <i>module...</i> &lt;/dev/null
+</pre>
+
+---+++ Non-Foswiki use of local CPAN modules
 
 The CpanInstallerContrib is also useful outside of the scope of Foswiki as it provides a way to reliably install CPAN
 modules locally.
+
+<pre>
+$ mkdir -p ~/lib/CPAN/
+$ tools/install-cpan.pl --installdir=~/lib/CPAN/
+</pre>
+
+To use these CPAN modules in your scripts, tell perl about them in one of the usual ways:
+
+<pre>
+export PERL5LIB=~/lib/CPAN/lib/:~/lib/CPAN/lib/arch/
+perl -I~/lib/CPAN/lib/ -I~/lib/CPAN/lib/arch/
+use lib qw( /home/user/lib/CPAN/lib /home/user/lib/CPAN/lib/arch );
+</pre>
+
+NOTE that you have to specify =lib/= and =lib/arch/= directories *below* the base installation directory (=~/lib/CPAN/=).
+
+
+---+++ Caveats
+
+This script is designed to be used when you can't (or don't want to) install CPAN modules system-wide.
+
+*PREFER YOUR PACAKGE MANAGER!*  Whether it be apt-get, yum, ports, or anything else.  
+   * The problem often is that certain modules aren't in the distributions' repositories.  Consider using programs like =cpan2rpm= or debian's =cpan-libcpanplus-dist-deb=
+   * Corrolary: use those pacakge builders with =calc-cpan-deps.pl= instead of this script
+
+the =calc-cpan-deps.pl= script includes *all* CPAN module dependencies and as such, some of the lower-level library files that might cause perl to upgrade itself!  Use its output with caution.
+
 
 
 ---++ Additional Tools
 
 ---+++ Mirroring CPAN
 
-As of 07 May 2007, a mirror requires approximately _795MB_ of storage.
+As of 04 Feb 2010, a CPAN mirror of the latest version requires approximately _1.3GB_ of storage.
 <verbatim>
 $ tools/mirror-cpan.pl
 </verbatim>
@@ -32,15 +80,41 @@ $ tools/mirror-cpan.pl
 =mirror-cpan.pl= with its default parameters downloads the latest version of all CPAN modules from
 http://cpan.org and stores those files locally in a =MIRROR/MINICPAN/= directory under
 =mirror-cpan.pl=.
-(see =mirror-cpan.pl --help= for more information on command line parameters.)
+
+<verbatim>
+Usage:
+$ mirror-cpan.pl [options] [CPAN modules list regex...]
+      --mirror-from	source mirror; defaults to http://cpan.org
+      --mirror-to       destination mirror; defaults to a MIRROR/CPAN/ below this mirror-cpan.pl script
+      --status		shows variables
+      --help | --?	usage info
+      --debug
+      --verbose
+
+Examples:
+Creates local mirror from CPAN containing only the latest version of each module (~795MB 07 May 2007)
+$ tools/mirror-cpan.pl
+
+Creates a local mirror of everything related to WWW::Mechanize
+$ ./mirror-cpan.pl WWW::Mechanize
+$ ./mirror-cpan.pl \^WWW::Mechanize      # more selective; only WWW::Mechanize tree on down, but not, eg, Test::WWW::Mechanize
+</verbatim>
  
+
+---+++ Calculating CPAN module dependencies
+
+<verbatim>
+$ tools/calc-cpan-dependencies.pl Net::Twitter
+ExtUtils::MakeMakerCompress::Raw::ZlibCompress::Raw::Bzip2Package::ConstantsIO::ZlibCompress::ZlibFile::TempText::ParseWordsData::DumperIO::FileGetopt::LongExtUtils::ManifestArchive::TarExtUtils::InstallExtUtils::CBuilderModule::BuildFile::PathTestCarpAlgorithm::C3Data::OptListSub::InstallParams::UtilFile::SpecExporterXSLoaderClass::C3Sub::ExporterScope::GuardTest::HarnessbaseDigest::baseVariable::MagicMRO::CompatTask::WeakenDevel::GlobalDestructionSub::NameSub::UplevelTest::MoreUNIVERSAL::requireClass::Data::InheritableDigest::HMAC_SHA1Class::AccessorDigest::MD5HTML::ParserHTML::TagsetNet::FTPnamespace::cleanB::Hooks::EndOfScopeMIME::Base64List::MoreUtilsClass::MOPTest::ExceptionScalar::UtilJSON::AnyMooseX::MultiInitArgNet::OAuthDigest::SHAHTTP::Request::Commonnamespace::autocleanURIMoose::RoleNet::Twitter
+</verbatim>
+
 
 ---++!! Settings
 
 Settings are stored as preferences variables. To reference a setting, write ==%<nop>&lt;plugin&gt;_&lt;setting&gt;%==, e.g. ==%<nop>CPANCONTRIB_STUB%==
 
    * One line description:
-      * Set SHORTDESCRIPTION = Bundled Prebuilt CPAN Modules for Foswiki's Foswiki:Extensions modules
+      * Set SHORTDESCRIPTION = Install CPAN modules to a local directory (non system-wide installation)
 
    * Name of the perl package
       * Set STUB = %$STUB%
@@ -55,10 +129,6 @@ __Note:__ You do not need to install anything on the browser to use this contrib
      | *File:* | *Description:* |
 %$MANIFEST%
 
-<!--
-   * Test if the installation was successful:
-      * _enter samples here_
--->
 
 ---++ Contrib Info
 
@@ -68,7 +138,7 @@ __Note:__ You do not need to install anything on the browser to use this contrib
 |  Dependencies: | %$DEPENDENCIES% |
 |  Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
-|  %DATE%: | Initial version |
+|  21 Feb 2010 | Split from !CpanContrib |
 |  Home: | http://foswiki.org/Extensions/%TOPIC% |
 |  Support: | http://foswiki.org/Support/%TOPIC% |
 
