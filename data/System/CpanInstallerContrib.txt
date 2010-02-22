@@ -11,7 +11,7 @@ documentation and support files to a local directory (non system-wide installati
 You don't need to configure CPAN installation manually nor will this script clobber any existing CPAN =MyConfig.pm=
 
 <pre>
-$ tools/install-cpan.pl [options] --installdir=  <CPAN modules...>
+$ tools/install-cpan.pl [options] --installdir=<dir>  <CPAN modules...>
   Options:
    -installdir         where to install the CPAN modules and documentation. 
                        CPAN modules are installed in a lib/ directory underneath.
@@ -27,7 +27,7 @@ $ tools/install-cpan.pl [options] --installdir=  <CPAN modules...>
 
 Note that the =installdir= is the root of the locally-installed CPAN libraries *and* documentation.
 Directories such as =lib= and =man= (and sometimes =bin=) will be created below =installdir=.
-There might also be module files installed in the computer architecture-specific directory =arch=.
+There might also be module files installed in the computer architecture-specific directory, =arch=.
 This is the normal layout Foswiki expects in =lib/CPAN= and is designed to automatically
 recognize new modules installed here.
 
@@ -53,36 +53,27 @@ perl -I~/lib/CPAN/lib/ -I~/lib/CPAN/lib/arch/
 use lib qw( /home/user/lib/CPAN/lib /home/user/lib/CPAN/lib/arch );
 </pre>
 
-NOTE that you have to specify =lib/= and =lib/arch/= directories *below* the base installation directory (=~/lib/CPAN/=).
+NOTE that you have to specify the =lib/= and =lib/arch/= directories located below the base installation directory (=~/lib/CPAN/=) when you specify your include paths.
 
 
----+++ Caveats
+---+++ PREFER YOUR PACAKGE MANAGER!
+
+Whether it be =apt-get=, =yum=, =ports=, or anything else.  
 
 This script is designed to be used when you can't (or don't want to) install CPAN modules system-wide.
-
-*PREFER YOUR PACAKGE MANAGER!*  Whether it be apt-get, yum, ports, or anything else.  
-   * The problem often is that certain modules aren't in the distributions' repositories.  Consider using programs like =cpan2rpm= or debian's =cpan-libcpanplus-dist-deb=
-   * Corrolary: use those pacakge builders with =calc-cpan-deps.pl= instead of this script
-
-the =calc-cpan-deps.pl= script includes *all* CPAN module dependencies and as such, some of the lower-level library files that might cause perl to upgrade itself!  Use its output with caution.
-
+   * The problem often is that certain modules aren't in the distributions' repositories.  Consider using programs like =[[http://perl.arix.com/cpan2rpm/][cpan2rpm]]= or debian's =[[http://www.debian-administration.org/articles/78][dh-make-perl]]=.
+   * Corrolary: use those pacakge builders with the output of =calc-cpan-deps.pl= instead of this script!
 
 
 ---++ Additional Tools
 
 ---+++ Mirroring CPAN
 
-As of 04 Feb 2010, a CPAN mirror of the latest version requires approximately _1.3GB_ of storage.
-<verbatim>
-$ tools/mirror-cpan.pl
-</verbatim>
-
 =mirror-cpan.pl= with its default parameters downloads the latest version of all CPAN modules from
 http://cpan.org and stores those files locally in a =MIRROR/MINICPAN/= directory under
 =mirror-cpan.pl=.
 
 <verbatim>
-Usage:
 $ mirror-cpan.pl [options] [CPAN modules list regex...]
       --mirror-from	source mirror; defaults to http://cpan.org
       --mirror-to       destination mirror; defaults to a MIRROR/CPAN/ below this mirror-cpan.pl script
@@ -90,12 +81,16 @@ $ mirror-cpan.pl [options] [CPAN modules list regex...]
       --help | --?	usage info
       --debug
       --verbose
+</verbatim>
 
-Examples:
-Creates local mirror from CPAN containing only the latest version of each module (~795MB 07 May 2007)
+Creates local mirror from CPAN containing only the latest version of each module:
+<verbatim>
 $ tools/mirror-cpan.pl
+</verbatim>
+As of 04 Feb 2010, a CPAN mirror of the latest version requires approximately _1.3GB_ of storage.
 
-Creates a local mirror of everything related to WWW::Mechanize
+Creates a local mirror of everything related to CPAN:WWW::Mechanize
+<verbatim>
 $ ./mirror-cpan.pl WWW::Mechanize
 $ ./mirror-cpan.pl \^WWW::Mechanize      # more selective; only WWW::Mechanize tree on down, but not, eg, Test::WWW::Mechanize
 </verbatim>
@@ -103,10 +98,24 @@ $ ./mirror-cpan.pl \^WWW::Mechanize      # more selective; only WWW::Mechanize t
 
 ---+++ Calculating CPAN module dependencies
 
+Calculates CPAN module dependencies.
+
 <verbatim>
+$ tools/calc-cpan-dependencies.pl [options] <CPAN Module>...
+  Options:
+   -status             show configuration
+   -verbose
+   -debug
+   -help               this documentation
+   -man                full docs
+</verbatim>
+
+<pre>
 $ tools/calc-cpan-dependencies.pl Net::Twitter
 ExtUtils::MakeMakerCompress::Raw::ZlibCompress::Raw::Bzip2Package::ConstantsIO::ZlibCompress::ZlibFile::TempText::ParseWordsData::DumperIO::FileGetopt::LongExtUtils::ManifestArchive::TarExtUtils::InstallExtUtils::CBuilderModule::BuildFile::PathTestCarpAlgorithm::C3Data::OptListSub::InstallParams::UtilFile::SpecExporterXSLoaderClass::C3Sub::ExporterScope::GuardTest::HarnessbaseDigest::baseVariable::MagicMRO::CompatTask::WeakenDevel::GlobalDestructionSub::NameSub::UplevelTest::MoreUNIVERSAL::requireClass::Data::InheritableDigest::HMAC_SHA1Class::AccessorDigest::MD5HTML::ParserHTML::TagsetNet::FTPnamespace::cleanB::Hooks::EndOfScopeMIME::Base64List::MoreUtilsClass::MOPTest::ExceptionScalar::UtilJSON::AnyMooseX::MultiInitArgNet::OAuthDigest::SHAHTTP::Request::Commonnamespace::autocleanURIMoose::RoleNet::Twitter
-</verbatim>
+</pre>
+
+The =calc-cpan-deps.pl= script includes *all* CPAN module dependencies and, as such, some of the lower-level library files that might cause perl to upgrade itself!  Use its output with caution.
 
 
 ---++!! Settings
@@ -133,7 +142,7 @@ __Note:__ You do not need to install anything on the browser to use this contrib
 ---++ Contrib Info
 
 |  Author: | Foswiki:Main.WillNorris |
-|  Copyright &copy;: | Copyright &copy; 2004,2005,2007,2009,2010 Foswiki:Main.WillNorris |
+|  Copyright: | Copyright &copy; 2004,2005,2007,2009,2010 Will Norris.  All Rights Reserved. |
 |  License: | GPL ([[http://www.gnu.org/copyleft/gpl.html][GNU General Public License]]) |
 |  Dependencies: | %$DEPENDENCIES% |
 |  Version: | %$VERSION% |
