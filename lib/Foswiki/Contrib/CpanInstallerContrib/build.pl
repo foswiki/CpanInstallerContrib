@@ -9,5 +9,5 @@ BEGIN {
 }
 use Foswiki::Contrib::Build;
 
-my $build = new Foswiki::Contrib::Build( 'CpanInstallContrib' );
+my $build = new Foswiki::Contrib::Build( 'CpanInstallerContrib' );
 $build->build( $build->{target} );
