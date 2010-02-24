@@ -4,13 +4,24 @@
 =tools/install-cpan.pl= is designed to easily install CPAN modules and their accompanying
 documentation and support files to a local directory (non system-wide installation).
 
+%ICON{warning}% *You probably don't want to use this script to install CPAN modules.*  You should prefer your package manager, whether it be whether it be =apt-get=, =yum=, =ports=, or whatever else.
+
+What if the CPAN module isn't in my distribution's repository?  Inclusion of CPAN modules in the repositories is highly variable amongst distributions, and you will 
+which aren't in the distributions' repositories.  Consider using programs like =[[http://perl.arix.com/cpan2rpm/][cpan2rpm]]= or debian's =[[http://www.debian-administration.org/articles/78][dh-make-perl]]=.  By creating packages for these CPAN modules and contributing them back upstream, you benefit not only the entire Foswiki community, but also the much larger communites of Debian, Red Hat, or whichever other distribution *you* use.
+   * Corrolary: use those pacakge builders with the output of =calc-cpan-deps.pl= instead of this script!
+
+Still here?  If so, you probably are in one of the following situtations:
+   * you are on a shared system, such as web hosting.  you can probably have installed any CPAN module that's available for your distribution, but that doesn't help with the ones that aren't.  you _could_ use a package maker tool described above (hint, hint ;-)), but that doesn't have your wiki working _today_.
+   * you need to use newer versions of the CPAN than what is installed system-wide.  there are no newer versions available than what you have installed, or the system administrator doesn't want to install a newer version (perhaps certain critical applications have only been tested with certain versions, or worse, only work with certain versions of the CPAN modules).
+This script is designed to be used when you can't (or don't want to) install CPAN modules system-wide.
+
 %TOC%
 
 ---++ Installing CPAN modules
 
 You don't need to configure CPAN installation manually nor will this script clobber any existing CPAN =MyConfig.pm=
 
-<pre>
+<verbatim>
 $ tools/install-cpan.pl [options] --installdir=<dir>  <CPAN modules...>
   Options:
    -installdir         where to install the CPAN modules and documentation. 
@@ -23,9 +34,9 @@ $ tools/install-cpan.pl [options] --installdir=<dir>  <CPAN modules...>
    -debug
    -help               this usage information
    -man                full docs
-</pre>
+</verbatim>
 
-Note that the =installdir= is the root of the locally-installed CPAN libraries *and* documentation.
+Note that the =installdir= is the root of the locally-installed CPAN libraries _and_ documentation.
 Directories such as =lib= and =man= (and sometimes =bin=) will be created below =installdir=.
 There might also be module files installed in the computer architecture-specific directory, =arch=.
 This is the normal layout Foswiki expects in =lib/CPAN= and is designed to automatically
@@ -56,15 +67,6 @@ use lib qw( /home/user/lib/CPAN/lib /home/user/lib/CPAN/lib/arch );
 NOTE that you have to specify the =lib/= and =lib/arch/= directories located below the base installation directory (=~/lib/CPAN/=) when you specify your include paths.
 
 
----+++ PREFER YOUR PACAKGE MANAGER!
-
-Whether it be =apt-get=, =yum=, =ports=, or anything else.  
-
-This script is designed to be used when you can't (or don't want to) install CPAN modules system-wide.
-   * The problem often is that certain modules aren't in the distributions' repositories.  Consider using programs like =[[http://perl.arix.com/cpan2rpm/][cpan2rpm]]= or debian's =[[http://www.debian-administration.org/articles/78][dh-make-perl]]=.
-   * Corrolary: use those pacakge builders with the output of =calc-cpan-deps.pl= instead of this script!
-
-
 ---++ Additional Tools
 
 ---+++ Mirroring CPAN
@@ -87,7 +89,7 @@ Creates local mirror from CPAN containing only the latest version of each module
 <verbatim>
 $ tools/mirror-cpan.pl
 </verbatim>
-As of 04 Feb 2010, a CPAN mirror of the latest version requires approximately _1.3GB_ of storage.
+As of 04 Feb 2010, a CPAN mirror of the latest version of each module requires approximately _1.3GB_ of storage.
 
 Creates a local mirror of everything related to CPAN:WWW::Mechanize
 <verbatim>
@@ -103,6 +105,8 @@ Calculates CPAN module dependencies.
 <verbatim>
 $ tools/calc-cpan-dependencies.pl [options] <CPAN Module>...
   Options:
+   --list-uninstalled  only list those modules which are not already installed
+   --list-versions     display version number for each installed module
    -status             show configuration
    -verbose
    -debug
@@ -110,9 +114,21 @@ $ tools/calc-cpan-dependencies.pl [options] <CPAN Module>...
    -man                full docs
 </verbatim>
 
-<pre>
+<pre style="word-wrap:on">
 $ tools/calc-cpan-dependencies.pl Net::Twitter
 ExtUtils::MakeMakerCompress::Raw::ZlibCompress::Raw::Bzip2Package::ConstantsIO::ZlibCompress::ZlibFile::TempText::ParseWordsData::DumperIO::FileGetopt::LongExtUtils::ManifestArchive::TarExtUtils::InstallExtUtils::CBuilderModule::BuildFile::PathTestCarpAlgorithm::C3Data::OptListSub::InstallParams::UtilFile::SpecExporterXSLoaderClass::C3Sub::ExporterScope::GuardTest::HarnessbaseDigest::baseVariable::MagicMRO::CompatTask::WeakenDevel::GlobalDestructionSub::NameSub::UplevelTest::MoreUNIVERSAL::requireClass::Data::InheritableDigest::HMAC_SHA1Class::AccessorDigest::MD5HTML::ParserHTML::TagsetNet::FTPnamespace::cleanB::Hooks::EndOfScopeMIME::Base64List::MoreUtilsClass::MOPTest::ExceptionScalar::UtilJSON::AnyMooseX::MultiInitArgNet::OAuthDigest::SHAHTTP::Request::Commonnamespace::autocleanURIMoose::RoleNet::Twitter
+
+$ tools/calc-cpan-dependencies.pl --list-uninstalled Net::Twitter
+Algorithm::C3 Class::C3 Scope::Guard Data::OptListSub::Install Params::Util MRO::Compat Devel::GlobalDestruction Variable::Magic Sub::Exporter Class::MOP Try::Tiny Test::use::ok B::Hooks::EndOfScope Sub::Identify Sub::Name Moose Task::Weaken Tie::ToObject namespace::clean MooseX::MultiInitArg namespace::autoclean JSON::Any Net::OAuth Digest::SHA JSON::XS Data::Visitor::Callback Net::Twitter
+
+$ tools/calc-cpan-dependencies.pl KinoSearch
+Text::ParseWords IO::File ExtUtils::MakeMaker Test::Harness ExtUtils::CBuilder Symbol Exporter File::Spec Test::More ExtUtils::ParseXS Compress::Raw::Zlib Compress::Raw::Bzip2 Scalar::Util Lingua::Stem::Snowball Compress::Zlib Lingua::StopWords KinoSearch
+
+$ tools/calc-cpan-dependencies.pl --list-uninstalled KinoSearch
+Compress::Raw::Bzip2 Lingua::Stem::Snowball Lingua::StopWords KinoSearch
+
+$ tools/calc-cpan-dependencies.pl --list-versions KinoSearch
+Text::ParseWords (3.21), IO::File (1.10), ExtUtils::MakeMaker (6.32), Test::Harness (2.64), ExtUtils::CBuilder (0.18), Symbol (1.05), Exporter(5.58), File::Spec (3.24), Test::More (0.7), ExtUtils::ParseXS (2.18), Compress::Raw::Zlib (2.024), Compress::Raw::Bzip2 (2.024), Scalar::Util(1.19), Lingua::Stem::Snowball (), Compress::Zlib (2.024), Lingua::StopWords (0.09), KinoSearch ()
 </pre>
 
 The =calc-cpan-deps.pl= script includes *all* CPAN module dependencies and, as such, some of the lower-level library files that might cause perl to upgrade itself!  Use its output with caution.
