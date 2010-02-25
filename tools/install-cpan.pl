@@ -43,7 +43,7 @@ GetOptions( $optsConfig,
 	    );
 pod2usage( 1 ) if $optsConfig->{help};
 pod2usage({ -exitval => 1, -verbose => 2 }) if $optsConfig->{man};
-print STDERR Dumper( $optsConfig ) if $optsConfig->{debug};
+print STDERR "optsConfig: " . Dumper( $optsConfig ) if $optsConfig->{debug};
 
 # fix up relative paths
 foreach my $path qw( installdir mirror config ) {
@@ -58,10 +58,10 @@ foreach my $path qw( installdir mirror config ) {
 my @localLibs = ( "$optsConfig->{installdir}/lib", "$optsConfig->{installdir}/lib/arch" );
 unshift @INC, @localLibs;
 $ENV{PERL5LIB} = join( ':', @localLibs );
-print STDERR Dumper( \@INC ) if $optsConfig->{debug};
+print STDERR "INC: " . Dumper( \@INC ) if $optsConfig->{debug};
 
 if ( $optsConfig->{status} ) {
-    print Dumper( $optsConfig );
+    print "optsConfig: " . Dumper( $optsConfig );
 }
 #print STDERR Dumper( $optsConfig ) if $optsConfig->{debug};
 
@@ -88,7 +88,7 @@ installLocalModules({
 	'Data::UUID' => [ qw( /var/tmp 0007 ) ],
 #?	'GD' => [ qw( /usr/local/lib y y y ) ],
     },
-    # TODO: update to use same output as =cpan/calc-foswiki-deps.pl=
+    # TODO: update to use same output as =cpan/calc-cpan-deps.pl=
     modules => [ @ARGV ],
 });
 # Image::LibRSVG
@@ -132,14 +132,14 @@ sub installLocalModules
     {
 	print "Installing $module\n" if $optsConfig->{verbose};
 
-	my $obj = CPAN::Shell->expand( Module => $module ) or warn qq{can't find CPAN module "$module" (is it misspelled?)\n};
-	next unless $obj;
-	$obj->force;
-	$obj->install; # or warn "Error installing $module\n"; 
-print STDERR Dumper( $obj );
+	my $module = CPAN::Shell->expand( Module => $module ) or warn qq{can't find CPAN module "$module" (is it misspelled?)\n};
+	next unless $module;
+	$module->force;
+	$module->install; # or warn "Error installing $module\n"; 
+print STDERR "module: " . Dumper( $module );
     }
 
-#    print Dumper( $CPAN::Config );
+    print STDERR "CPAN::Config" . Dumper( $CPAN::Config );
 }
 
 ################################################################################

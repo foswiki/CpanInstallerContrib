@@ -57,11 +57,9 @@ print "@versions: " . Dumper( \@versions ) if $optsConfig->{debug};
 print join( ', ', map { "$_->[0] (" . ($_->[1]||'') . ')' } @versions ), "\n"
     if $optsConfig->{'list-versions'};
 
-if ( $optsConfig->{'list-uninstalled'} ) {
-    print join( ', ', map { $_->[0] } grep { not defined $_->[1] } @versions ), "\n";
-} else {
-    print join( ' ', @deps ), "\n";
-}
+print join( ' ', $optsConfig->{'list-uninstalled'}
+	    ? map { $_->[0] } grep { not defined $_->[1] } @versions
+            : @deps ), "\n";
 
 exit 0;
 
