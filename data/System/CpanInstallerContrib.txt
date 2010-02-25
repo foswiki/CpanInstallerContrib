@@ -7,8 +7,7 @@ documentation and support files to a local directory (non system-wide installati
 %ICON{warning}% *You probably don't want to use this script to install CPAN modules.*  You should prefer your package manager, whether it be whether it be =apt-get=, =yum=, =ports=, or whatever else.
 
 What if the CPAN module isn't in my distribution's repository?  Inclusion of CPAN modules in the repositories is highly variable amongst distributions, and you will 
-which aren't in the distributions' repositories.  Consider using programs like =[[http://perl.arix.com/cpan2rpm/][cpan2rpm]]= or debian's =[[http://www.debian-administration.org/articles/78][dh-make-perl]]=.  By creating packages for these CPAN modules and contributing them back upstream, you benefit not only the entire Foswiki community, but also the much larger communites of Debian, Red Hat, or whichever other distribution *you* use.
-   * Corrolary: use those pacakge builders with the output of =calc-cpan-deps.pl= instead of this script!
+which aren't in the distributions' repositories.  Consider using programs like =[[http://perl.arix.com/cpan2rpm/][cpan2rpm]]= or debian's =[[http://www.debian-administration.org/articles/78][dh-make-perl]]=.  By creating packages for these CPAN modules and contributing them back upstream, you benefit not only the entire Foswiki community, but also the much larger communites of Debian, Red Hat, or whichever other distribution *you* use.  Note that the output of =calc-cpan-deps.pl= will help you determine which modules need packaging.
 
 Still here?  If so, you probably are in one of the following situtations:
    * you are on a shared system, such as web hosting.  you can probably have installed any CPAN module that's available for your distribution, but that doesn't help with the ones that aren't.  you _could_ use a package maker tool described above (hint, hint ;-)), but that doesn't have your wiki working _today_.
