@@ -18,6 +18,8 @@ use Config;
 use Pod::Usage;
 use Cwd qw( cwd );
 
+$SIG{INT} = sub {};
+
 my $dirMirror = "$FindBin::Bin/MIRROR/MINICPAN/";
 my $optsConfig = {
 #
@@ -171,11 +173,14 @@ sub createMyConfigDotPm
 
     open( FH, ">$cpanConfig" ) or die "$!: Can't create $cpanConfig";
     $CPAN::Config = {
+	'auto_commit' => q[0],
 	'build_cache' => q[0],
 	'build_dir' => "$cpan/.cpan/build",
 	'cache_metadata' => q[1],
+	'commandnumber_in_prompt' => q[1],
 	'cpan_home' => "$cpan/.cpan",
 	'ftp' => q[/bin/ftp],
+	'ftp_passive' => q[1],
 	'ftp_proxy' => q[],
 	'getcwd' => q[cwd],
 	'gpg' => q[],
@@ -191,7 +196,12 @@ sub createMyConfigDotPm
 	'make' => q[/usr/bin/make],
 	'make_arg' => "-I$cpan/",
 	'make_install_arg' => "-I$cpan/lib/",
+	'make_install_make_command' => q[/usr/bin/make],
 	'makepl_arg' => "install_base=$cpan LIB=$cpan/lib INSTALLPRIVLIB=$cpan/lib INSTALLARCHLIB=$cpan/lib/arch INSTALLSITEARCH=$cpan/lib/arch INSTALLSITELIB=$cpan/lib INSTALLSCRIPT=$cpan/bin INSTALLBIN=$cpan/bin INSTALLSITEBIN=$cpan/bin INSTALLMAN1DIR=$cpan/man/man1 INSTALLSITEMAN1DIR=$cpan/man/man1 INSTALLMAN3DIR=$cpan/man/man3 INSTALLSITEMAN3DIR=$cpan/man/man3",
+  'mbuild_arg' => q[],
+  'mbuild_install_arg' => q[],
+  'mbuild_install_build_command' => q[./Build],
+  'mbuildpl_arg' => "--install_base $cpan",
 	'ncftp' => q[],
 	'ncftpget' => q[],
 	'no_proxy' => q[],
@@ -199,9 +209,12 @@ sub createMyConfigDotPm
 	'prerequisites_policy' => q[follow],
 	'scan_cache' => q[atstart],
 	'shell' => q[/bin/bash],
+#'show_upload_date' => q[0],
 	'tar' => q[/bin/tar],
 	'term_is_latin' => q[1],
+#'term_ornaments' => q[0],
 	'unzip' => q[/usr/bin/unzip],
+#'use_sqlite' => q[0],
 	'wget' => q[/usr/bin/wget],
     };
     print FH "\$CPAN::Config = {\n";
