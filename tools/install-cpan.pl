@@ -48,7 +48,7 @@ pod2usage({ -exitval => 1, -verbose => 2 }) if $optsConfig->{man};
 print STDERR "optsConfig: " . Dumper( $optsConfig ) if $optsConfig->{debug};
 
 # fix up relative paths
-foreach my $path qw( installdir mirror config ) {
+foreach my $path (qw( installdir mirror config )) {
     $optsConfig->{$path} = absolutePath( $optsConfig->{$path} );
 
     if ( $path eq 'mirror' ) {
