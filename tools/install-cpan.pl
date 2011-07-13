@@ -7,6 +7,7 @@
 use strict;
 use Data::Dumper qw( Dumper );
 ++$|;
+
 #open(STDERR,'>&STDOUT'); # redirect error to browser
 use CPAN;
 use File::Path qw( mkpath rmtree );
@@ -18,53 +19,63 @@ use Config;
 use Pod::Usage;
 use Cwd qw( cwd );
 
-$SIG{INT} = sub {};
+$SIG{INT} = sub { };
 
-my $dirMirror = "$FindBin::Bin/MIRROR/MINICPAN/";
+my $dirMirror  = "$FindBin::Bin/MIRROR/MINICPAN/";
 my $optsConfig = {
-#
+
+    #
     installdir => $FindBin::Bin . '/../lib/CPAN',
-# SMELL: change into list   
+
+    # SMELL: change into list
     mirror => -d $dirMirror && "file:$dirMirror" || 'http://cpan.org',
-#
+
+    #
     config => "~/.cpan/CPAN/MyConfig.pm",
-#
-    status => 0,
+
+    #
+    status  => 0,
     verbose => 0,
-    debug => 0,
-    help => 0,
-    man => 0,
+    debug   => 0,
+    help    => 0,
+    man     => 0,
 };
 
-GetOptions( $optsConfig,
-	    'installdir=s', 'mirror=s', 'config=s',
-	    'force|f',
-	    'status',
-# miscellaneous/generic options
-	    'help', 'man', 'debug', 'verbose|v',
-	    );
-pod2usage( 1 ) if $optsConfig->{help};
-pod2usage({ -exitval => 1, -verbose => 2 }) if $optsConfig->{man};
-print STDERR "optsConfig: " . Dumper( $optsConfig ) if $optsConfig->{debug};
+GetOptions(
+    $optsConfig,
+    'installdir=s', 'mirror=s', 'config=s',
+    'force|f',
+    'status',
+
+    # miscellaneous/generic options
+    'help', 'man', 'debug', 'verbose|v',
+);
+pod2usage(1) if $optsConfig->{help};
+pod2usage( { -exitval => 1, -verbose => 2 } ) if $optsConfig->{man};
+print STDERR "optsConfig: " . Dumper($optsConfig) if $optsConfig->{debug};
 
 # fix up relative paths
 foreach my $path (qw( installdir mirror config )) {
     $optsConfig->{$path} = absolutePath( $optsConfig->{$path} );
 
     if ( $path eq 'mirror' ) {
-	# use file: unless some transport (eg, http:, ftp:, etc.) has already been specified
-	$optsConfig->{$path} = 'file:' . $optsConfig->{$path} unless $optsConfig->{$path} =~ /^[^:]{2,}:/;
+
+# use file: unless some transport (eg, http:, ftp:, etc.) has already been specified
+        $optsConfig->{$path} = 'file:' . $optsConfig->{$path}
+          unless $optsConfig->{$path} =~ /^[^:]{2,}:/;
     }
 }
 
-my @localLibs = ( "$optsConfig->{installdir}/lib", "$optsConfig->{installdir}/lib/arch" );
+my @localLibs =
+  ( "$optsConfig->{installdir}/lib", "$optsConfig->{installdir}/lib/arch" );
 unshift @INC, @localLibs;
 $ENV{PERL5LIB} = join( ':', @localLibs );
 print STDERR "INC: " . Dumper( \@INC ) if $optsConfig->{debug};
 
 if ( $optsConfig->{status} ) {
-    print "optsConfig: " . Dumper( $optsConfig );
+    print "optsConfig: " . Dumper($optsConfig);
 }
+
 #print STDERR Dumper( $optsConfig ) if $optsConfig->{debug};
 
 ################################################################################
@@ -82,17 +93,22 @@ if ( $optsConfig->{status} ) {
 #    modules => [ qw( XML::SAX ) ],
 #});
 
-installLocalModules({
-    dir => $optsConfig->{installdir},
-    config => {
-	'HTML::Parser' => [ qw( no ) ],
-	'XML::SAX' => [ qw( Y ) ],
-	'Data::UUID' => [ qw( /var/tmp 0007 ) ],
-#?	'GD' => [ qw( /usr/local/lib y y y ) ],
-    },
-    # TODO: update to use same output as =cpan/calc-cpan-deps.pl=
-    modules => [ @ARGV ],
-});
+installLocalModules(
+    {
+        dir    => $optsConfig->{installdir},
+        config => {
+            'HTML::Parser' => [qw( no )],
+            'XML::SAX'     => [qw( Y )],
+            'Data::UUID'   => [qw( /var/tmp 0007 )],
+
+            #?	'GD' => [ qw( /usr/local/lib y y y ) ],
+        },
+
+        # TODO: update to use same output as =cpan/calc-cpan-deps.pl=
+        modules => [@ARGV],
+    }
+);
+
 # Image::LibRSVG
 
 # explicity call cleanup code (puts back MyConfig.pm)
@@ -104,16 +120,16 @@ exit 0;
 sub absolutePath {
     my $filename = shift;
 
-    # expand tildes in paths (from Perl Cookbook: 7.3. Expanding Tildes in Filenames)
+# expand tildes in paths (from Perl Cookbook: 7.3. Expanding Tildes in Filenames)
     $filename =~ s{ ^ ~ ( [^/]* ) }
     { $1 
 	  ? (getpwnam($1))[7]
 	  : ( $ENV{HOME} || $ENV{LOGDIR} || (getpwuid($>))[7] )
     }ex;
 
-    # 
-    $filename = File::Spec->rel2abs( $filename ) 
-	unless $filename=~ /^[^:]{2,}:/;
+    #
+    $filename = File::Spec->rel2abs($filename)
+      unless $filename =~ /^[^:]{2,}:/;
 
     return $filename;
 }
@@ -121,33 +137,32 @@ sub absolutePath {
 ################################################################################
 ################################################################################
 
-sub installLocalModules
-{
+sub installLocalModules {
     my $parm = shift;
     my $cpan = $parm->{dir};
 
-    createMyConfigDotPm({ cpan => $cpan, config => $optsConfig->{config} });
+    createMyConfigDotPm( { cpan => $cpan, config => $optsConfig->{config} } );
 
-    my @modules = @{$parm->{modules}};
-    print "Installing the following modules: ", Dumper( \@modules ) if $optsConfig->{debug};
-    foreach my $module ( @modules )
-    {
-	print "Installing $module\n" if $optsConfig->{verbose};
+    my @modules = @{ $parm->{modules} };
+    print "Installing the following modules: ", Dumper( \@modules )
+      if $optsConfig->{debug};
+    foreach my $module (@modules) {
+        print "Installing $module\n" if $optsConfig->{verbose};
 
-	my $module = CPAN::Shell->expand( Module => $module ) or warn qq{can't find CPAN module "$module" (is it misspelled?)\n};
-	next unless $module;
-	$module->force;
-	$module->install; # or warn "Error installing $module\n"; 
-print STDERR "module: " . Dumper( $module );
+        my $module = CPAN::Shell->expand( Module => $module )
+          or warn qq{can't find CPAN module "$module" (is it misspelled?)\n};
+        next unless $module;
+        $module->force;
+        $module->install;    # or warn "Error installing $module\n";
+        print STDERR "module: " . Dumper($module);
     }
 
-    print STDERR "CPAN::Config" . Dumper( $CPAN::Config );
+    print STDERR "CPAN::Config" . Dumper($CPAN::Config);
 }
 
 ################################################################################
 
-sub createMyConfigDotPm
-{
+sub createMyConfigDotPm {
     my $parm = shift;
     my $cpan = $parm->{cpan} or die "no cpan directory?";
 
@@ -155,77 +170,77 @@ sub createMyConfigDotPm
 
     # save the existing config file
     # install a sig handler to restore it
-    if ( -e $cpanConfig )
-    {
-	open( CONFIG, "<$cpanConfig" ) or die $!;
-	local $/ = undef;
-	my $OLD_CONFIG = <CONFIG>;
-	close( CONFIG );
+    if ( -e $cpanConfig ) {
+        open( CONFIG, "<$cpanConfig" ) or die $!;
+        local $/ = undef;
+        my $OLD_CONFIG = <CONFIG>;
+        close(CONFIG);
 
-	$SIG{INT} = sub {
-	    open( CONFIG, ">$cpanConfig" ) or die $!;
-	    print CONFIG $OLD_CONFIG;
-	    close( CONFIG );
-	};
+        $SIG{INT} = sub {
+            open( CONFIG, ">$cpanConfig" ) or die $!;
+            print CONFIG $OLD_CONFIG;
+            close(CONFIG);
+        };
     }
 
-    -d dirname( $cpanConfig ) or mkpath( dirname( $cpanConfig ) );
+    -d dirname($cpanConfig) or mkpath( dirname($cpanConfig) );
 
     open( FH, ">$cpanConfig" ) or die "$!: Can't create $cpanConfig";
     $CPAN::Config = {
-	'auto_commit' => q[0],
-	'build_cache' => q[0],
-	'build_dir' => "$cpan/.cpan/build",
-	'cache_metadata' => q[1],
-	'commandnumber_in_prompt' => q[1],
-	'cpan_home' => "$cpan/.cpan",
-	'ftp' => q[/bin/ftp],
-	'ftp_passive' => q[1],
-	'ftp_proxy' => q[],
-	'getcwd' => q[cwd],
-	'gpg' => q[],
-	'gzip' => q[/bin/gzip],
-	'histfile' => "$cpan/.cpan/histfile",
-	'histsize' => q[0],
-	'http_proxy' => q[],
-	'inactivity_timeout' => q[0],
-	'index_expire' => q[1],
-	'inhibit_startup_message' => q[1],
-	'keep_source_where' => "$cpan/.cpan/sources",
-	'lynx' => q[],
-	'make' => q[/usr/bin/make],
-	'make_arg' => "-I$cpan/",
-	'make_install_arg' => "-I$cpan/lib/",
-	'make_install_make_command' => q[/usr/bin/make],
-	'makepl_arg' => "install_base=$cpan LIB=$cpan/lib INSTALLPRIVLIB=$cpan/lib INSTALLARCHLIB=$cpan/lib/arch INSTALLSITEARCH=$cpan/lib/arch INSTALLSITELIB=$cpan/lib INSTALLSCRIPT=$cpan/bin INSTALLBIN=$cpan/bin INSTALLSITEBIN=$cpan/bin INSTALLMAN1DIR=$cpan/man/man1 INSTALLSITEMAN1DIR=$cpan/man/man1 INSTALLMAN3DIR=$cpan/man/man3 INSTALLSITEMAN3DIR=$cpan/man/man3",
-  'mbuild_arg' => q[],
-  'mbuild_install_arg' => q[],
-  'mbuild_install_build_command' => q[./Build],
-  'mbuildpl_arg' => "--install_base $cpan",
-	'ncftp' => q[],
-	'ncftpget' => q[],
-	'no_proxy' => q[],
-	'pager' => q[],
-	'prerequisites_policy' => q[follow],
-	'scan_cache' => q[atstart],
-	'shell' => q[/bin/bash],
-#'show_upload_date' => q[0],
-	'tar' => q[/bin/tar],
-	'term_is_latin' => q[1],
-#'term_ornaments' => q[0],
-	'unzip' => q[/usr/bin/unzip],
-#'use_sqlite' => q[0],
-	'wget' => q[/usr/bin/wget],
+        'auto_commit'               => q[0],
+        'build_cache'               => q[0],
+        'build_dir'                 => "$cpan/.cpan/build",
+        'cache_metadata'            => q[1],
+        'commandnumber_in_prompt'   => q[1],
+        'cpan_home'                 => "$cpan/.cpan",
+        'ftp'                       => q[/bin/ftp],
+        'ftp_passive'               => q[1],
+        'ftp_proxy'                 => q[],
+        'getcwd'                    => q[cwd],
+        'gpg'                       => q[],
+        'gzip'                      => q[/bin/gzip],
+        'histfile'                  => "$cpan/.cpan/histfile",
+        'histsize'                  => q[0],
+        'http_proxy'                => q[],
+        'inactivity_timeout'        => q[0],
+        'index_expire'              => q[1],
+        'inhibit_startup_message'   => q[1],
+        'keep_source_where'         => "$cpan/.cpan/sources",
+        'lynx'                      => q[],
+        'make'                      => q[/usr/bin/make],
+        'make_arg'                  => "-I$cpan/",
+        'make_install_arg'          => "-I$cpan/lib/",
+        'make_install_make_command' => q[/usr/bin/make],
+        'makepl_arg' =>
+"install_base=$cpan LIB=$cpan/lib INSTALLPRIVLIB=$cpan/lib INSTALLARCHLIB=$cpan/lib/arch INSTALLSITEARCH=$cpan/lib/arch INSTALLSITELIB=$cpan/lib INSTALLSCRIPT=$cpan/bin INSTALLBIN=$cpan/bin INSTALLSITEBIN=$cpan/bin INSTALLMAN1DIR=$cpan/man/man1 INSTALLSITEMAN1DIR=$cpan/man/man1 INSTALLMAN3DIR=$cpan/man/man3 INSTALLSITEMAN3DIR=$cpan/man/man3",
+        'mbuild_arg'                   => q[],
+        'mbuild_install_arg'           => q[],
+        'mbuild_install_build_command' => q[./Build],
+        'mbuildpl_arg'                 => "--install_base $cpan",
+        'ncftp'                        => q[],
+        'ncftpget'                     => q[],
+        'no_proxy'                     => q[],
+        'pager'                        => q[],
+        'prerequisites_policy'         => q[follow],
+        'scan_cache'                   => q[atstart],
+        'shell'                        => q[/bin/bash],
+
+        #'show_upload_date' => q[0],
+        'tar'           => q[/bin/tar],
+        'term_is_latin' => q[1],
+
+        #'term_ornaments' => q[0],
+        'unzip' => q[/usr/bin/unzip],
+
+        #'use_sqlite' => q[0],
+        'wget' => q[/usr/bin/wget],
     };
     print FH "\$CPAN::Config = {\n";
-    foreach my $key ( sort keys %$CPAN::Config )
-    {
-	print FH qq{\t'$key' => q[$CPAN::Config->{$key}],\n};
+    foreach my $key ( sort keys %$CPAN::Config ) {
+        print FH qq{\t'$key' => q[$CPAN::Config->{$key}],\n};
     }
     print FH qq{\t'urllist' => [ q[$optsConfig->{mirror}] ],\n};
-    print FH "};\n",
-    "1;\n",
-    "__END__\n";
+    print FH "};\n", "1;\n", "__END__\n";
     close FH;
 }
 
@@ -233,6 +248,7 @@ sub createMyConfigDotPm
 ################################################################################
 
 __DATA__
+
 =head1 NAME
 
 install-cpan.pl - install local version of CPAN modules
